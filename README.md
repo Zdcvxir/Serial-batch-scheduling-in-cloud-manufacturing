@@ -47,4 +47,5 @@ python CGDH_MAML.py
 
 # Example Output
 After running the ```gurobi.py``` script, you will see the detailed Gurobi optimization log in the console, including presolve statistics, root relaxation, branch-and-bound progress (nodes explored, incumbent solutions, best bound, gap), and the final results — all printed progressively within the time deadline.
+
 After running - ```GC_random.py```, ```GCDH_MAML.py```, ```VND_random.py```, or ```VND_MAML.py```, you will see the solution process details (including initial solution and cost), along with a summary of 10 independent runs — best cost, average cost, and average runtime — as well as the cost, solution, and time for each individual run.
