@@ -1,6 +1,6 @@
 # Methods for the Serial-Batch Scheduling Problem in Cloud Manufacturing 
 
-This project implements meta-learning-enhanced column generation  heuristic, variable neighborhood descent and mixed-integer linear programming model to solve a serial-batch scheduling  problem in cloud manufacturing.
+This project implements meta-learning-enhanced column generation heuristic, variable neighborhood descent and mixed-integer linear programming model to solve a serial-batch scheduling  problem in cloud manufacturing.
 
 # Requirements
 
@@ -26,7 +26,7 @@ pip install gurobipy>=10.0 numpy>=1.23 pandas>=1.5 scikit-learn>=1.2 torch>=2.0 
 # Running
 1. Clone the repository:
 ```
-git https://github.com/ZXR2001/Serial-batch-scheduling-in-cloud-manufacturing-Meta-learning-enhanced-column-generation-and-variable.git
+git https://github.com/ZXR2001/Serial-batch-scheduling-in-cloud-manufacturing.git
 ```
 2. After installing required dependencies run the Python files directly, for example: 
 ```
