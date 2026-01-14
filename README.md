@@ -34,8 +34,8 @@ python CGDH_MAML.py
 ```
 
 # Project Structure
-- ```config.py```: Configuration file containing parameters for the project. We provide a sample instance for testing algorithms.
-- ```gurobi.py```: Implements an exact solver for the problem using the Gurobi optimizer.
+- ```config.py```:   Configuration module that defines all tunable parameters and settings. Includes a sample instance for quick algorithm testing and benchmarking.
+- ```gurobi.py```:  Implements an **exact solver** for the problem using the **Gurobi** optimizer (formulated as a mixed-integer linear program — MILP)
 - ```Predict_GC.py```: Deploys a **Model-Agnostic Meta-Learning (MAML)** model to predict key parameters for the column generation heuristic (CGDH), including:  
   maximum number of iterations, number of new columns per iteration, and heuristic strategy
 - ```GC_random.py```:   Baseline column generation heuristic (**CGDH**) that randomly samples the key parameters from the candidate ranges.
@@ -44,3 +44,7 @@ python CGDH_MAML.py
   neighborhood structures and their order.
 - ```VND_random.py```:  Baseline variable neighborhood descent (**VND**) that randomly samples the neighborhood structures and orders from predefined candidates.
 - ```VND_MAML.py```:   Enhanced variable neighborhood descent (**VND**) assisted by **MAML**-predicted neighborhood selection and ordering.
+
+# Example Output
+After running the ```gurobi.py``` script, you will see the detailed Gurobi optimization log in the console, including presolve statistics, root relaxation, branch-and-bound progress (nodes explored, incumbent solutions, best bound, gap), and the final results — all printed progressively within the time deadline.
+After running - ```GC_random.py```, ```GCDH_MAML.py```, ```VND_random.py```, or ```VND_MAML.py```, you will see the solution process details (including initial solution and cost), along with a summary of 10 independent runs — best cost, average cost, and average runtime — as well as the cost, solution, and time for each individual run.
