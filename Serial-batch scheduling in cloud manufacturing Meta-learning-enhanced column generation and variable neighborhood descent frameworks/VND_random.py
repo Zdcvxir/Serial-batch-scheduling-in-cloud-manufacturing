@@ -391,7 +391,7 @@ def run_once():
 
     start = time.perf_counter()
     Match = _initialize()
-    best_target, _, _ = VND(Match, T_max=10)
+    best_target, _, _ = VND(Match, T_max=60)
     elapsed = time.perf_counter() - start
     return elapsed, best_target, neighborhood
 
@@ -411,4 +411,5 @@ if __name__ == "__main__":
 
     print({"Best cost": best_obj,
                       "Average cost" : avg_obj,
+
                       "Average time": avg_time})
