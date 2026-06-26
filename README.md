@@ -25,7 +25,7 @@ This repository provides implementations of solution methods for the serial-batc
 # Running
 1. Clone the repository:
 ```
-git https://github.com/ZXR2001/Serial-batch-scheduling-in-cloud-manufacturing.git
+git clone https://github.com/Zdcvxir/Serial-batch-scheduling-in-cloud-manufacturing.git
 ```
 2. Install dependencies and run an example:
 ```
