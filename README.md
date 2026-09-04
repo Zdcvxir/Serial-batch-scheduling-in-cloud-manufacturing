@@ -1,50 +1,50 @@
-# Methods for the Serial-Batch Scheduling Problem in Cloud Manufacturing 
+# Serial-batch scheduling in cloud manufacturing
 
-This repository provides implementations of solution methods for the serial-batch scheduling problem in cloud manufacturing environments. It includes:
+This repository contains the implementation accompanying the manuscript
+*Meta-learning-enhanced column generation and variable neighborhood descent
+frameworks*.
 
-- a column generation-driven heuristic (**CGDH**) integrated with model-agnostic meta-learning (**MAML**)
-- a model-agnostic meta-learning-boosted variable neighborhood descent (**VND**) algorithm
-- mixed-integer linear programming (**MILP**) model solved via CPLEX
+## Main programs
 
-# Requirements
+- `CPLEX.py`: the MILP formulation solved with IBM ILOG CPLEX.
+- `CGDH_random.py`: CGDH with random configuration selection.
+- `CGDH_MAML.py`: CGDH with offline MAML-based configuration selection.
+- `VND_random.py`: VND with random neighborhood-sequence selection.
+- `VND_MAML.py`: VND with offline MAML-based configuration selection.
+- `Predict_CGDH.py` and `Predict_VND.py`: MAML training and prediction code.
+- `maml_core.py`: shared task construction, meta-training, and inference logic.
+- `maml_config.py`: the parameters reported in the manuscript.
 
-- Python 3.7 or higher (When using CPLEX 12.10, please note potential compatibility issues and ensure proper setup)
+The published MAML variants load the learned shared initialization, predict the
+cost of every candidate configuration, and select the candidate with the lowest
+predicted cost.
 
-# Dependencies
-- numpy>=1.19.0
-- pandas>=1.1.0
-- scikit-learn>=0.23.0
-- torch>=1.7.0
-- learn2learn>=0.1.0
-- matplotlib>=3.2.0
-- joblib>=0.14.0
-- gurobipy>=9.1.0(academic licence free)
-- docplex>=2.15.0
-- CPLEX>=12.10.0  # IBM CPLEX Studio must be installed first
+## Running an instance
 
-# Running
-1. Clone the repository:
-```
-git clone https://github.com/Zdcvxir/Serial-batch-scheduling-in-cloud-manufacturing.git
-```
-2. Install dependencies and run an example:
-```
-python CGDH_MAML.py
-```
+1. Copy an instance definition into `config.py`.
+2. Open the required main program in VS Code.
+3. Select the appropriate Python environment and click **Run Python File**.
 
-# Project Structure
-- ```config.py```:  Configuration module that defines all tunable parameters and settings. Includes a sample instance for quick algorithm testing and benchmarking.
-- ```CPLEX.py```:  Implements an **exact solver** for the problem using the **CPLEX** optimizer (formulated as a mixed-integer linear program — MILP).
-- ```Predict_GC.py```:  Deploys a **MAML** model to predict key parameters for the **CGDH**, including:  
-  maximum number of iterations, number of new columns per iteration, and scheduling policies.
-- ```GC_random.py```:  Baseline **CGDH** that randomly samples the key parameters from the candidate ranges.
-- ```GCDH_MAML.py```:  Enhanced **CGDH** where **MAML** is used to intelligently select the key parameters.
-- ```Predict_nei.py```:  Deploys a **MAML** model to predict key parameters for **VND** algorithm, including:
-  neighborhood structures and their order.
-- ```VND_random.py```:  Baseline **VND** that randomly samples the neighborhood structures and orders from predefined candidates.
-- ```VND_MAML.py```:   Enhanced **VND** assisted by **MAML**-predicted neighborhood selection and ordering.
+Before running a MAML-based algorithm, train the corresponding predictor as
+described below. The programs print the run-level results and summary statistics
+in the terminal.
 
-# Example Output
-After running the ```CPLEX.py``` script, you will see the detailed Gurobi optimization log in the console, including presolve statistics, root relaxation, branch-and-bound progress (nodes explored, incumbent solutions, best bound, gap), and the final results — all printed progressively within the time deadline.
+## Retraining the predictors
 
-After running - ```GC_random.py```, ```GCDH_MAML.py```, ```VND_random.py```, or ```VND_MAML.py```, you will see the solution process details (including initial solution and cost), along with a summary of 10 independent runs — best cost, average cost, and average runtime — as well as the cost, solution, and time for each individual run.
+Training data and trained model weights are not distributed with this
+repository. Place `result_CGDH.csv` and `result_VND.csv` in `data/`, then run
+`train_cgdh_model()` in `Predict_CGDH.py` and `train_vnd_model()` in
+`Predict_VND.py`, respectively. These functions reproduce the two
+meta-training workflows and save the resulting weights under the local
+`models/` directory. Both `data/` and `models/` are ignored by Git. Training is
+never started automatically when a model file is missing.
+
+## Solver requirements
+
+CGDH requires a licensed Gurobi installation. Install `requirements.txt` in the
+main algorithm environment. `CPLEX.py` requires a licensed IBM ILOG CPLEX
+installation and the packages listed in `requirements-cplex.txt`. The CPLEX
+program is independent of the PyTorch/MAML environment and can be run from the
+compatible Python environment supplied for the solver installation.
+Set `CPLEX_TIME_LIMIT` at the top of `CPLEX.py` to `3600` for small- and
+medium-scale instances or `9000` for large-scale instances.

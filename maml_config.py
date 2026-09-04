@@ -1,0 +1,33 @@
+"""Settings used by the MAML training and published algorithm variants."""
+
+# Candidate configurations used by CGDH and CGDH-MAML.
+CGDH_MAX_ITER = 100
+CGDH_NEW_COLUMN_LIMITS = (5, 10, 15)
+CGDH_POLICIES = ("used", "cost", "maxcols")
+
+# Shared base-learner architecture and MAML training settings.
+HIDDEN_UNITS = 128
+TRAINING_EPOCHS = 300
+META_BATCH_SIZE = 8
+INNER_LEARNING_RATE = 0.01
+OUTER_LEARNING_RATE = 0.001
+INNER_STEPS = 3
+EARLY_STOPPING_PATIENCE = 30
+RANDOM_SEED = 42
+CGDH_TRAIN_SUPPORT_SIZE = 3
+VND_TRAIN_SUPPORT_SIZE = 5
+
+# Instance-level task split used during meta-training.
+TRAIN_TASK_FRACTION = 0.70
+VALIDATION_TASK_FRACTION = 0.15
+TEST_TASK_FRACTION = 0.15
+STRATIFY_TASKS_BY_PROBLEM_SIZE = True
+EXPECTED_MAML_TASK_COUNT = 270
+EXPECTED_TASKS_PER_PROBLEM_SIZE = 10
+
+# Algorithm settings used in the computational experiments.
+NUMBER_OF_RUNS = 10
+VND_TIME_LIMIT = 60
+VND_INITIALIZATION_TRIALS = 3000
+CGDH_REDUCED_COST_CUTOFF = -1e-6
+CGDH_MAX_PRICING_TRIALS = 10000
