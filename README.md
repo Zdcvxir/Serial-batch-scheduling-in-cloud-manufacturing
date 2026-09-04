@@ -8,9 +8,9 @@ frameworks*.
 
 - `CPLEX.py`: the MILP formulation solved with IBM ILOG CPLEX.
 - `CGDH_random.py`: CGDH with random configuration selection.
-- `CGDH_MAML.py`: CGDH with offline MAML-based configuration selection.
+- `CGDH_MAML.py`: CGDH with MAML-based configuration selection.
 - `VND_random.py`: VND with random neighborhood-sequence selection.
-- `VND_MAML.py`: VND with offline MAML-based configuration selection.
+- `VND_MAML.py`: VND with MAML-based configuration selection.
 - `Predict_CGDH.py` and `Predict_VND.py`: MAML training and prediction code.
 - `maml_core.py`: shared task construction, meta-training, and inference logic.
 - `maml_config.py`: the parameters reported in the manuscript.
@@ -22,22 +22,17 @@ predicted cost.
 ## Running an instance
 
 1. Copy an instance definition into `config.py`.
-2. Open the required main program in VS Code.
-3. Select the appropriate Python environment and click **Run Python File**.
+2. Run the required main program in a compatible Python environment.
 
 Before running a MAML-based algorithm, train the corresponding predictor as
 described below. The programs print the run-level results and summary statistics
 in the terminal.
 
-## Retraining the predictors
+## Training the predictors
 
-Training data and trained model weights are not distributed with this
-repository. Place `result_CGDH.csv` and `result_VND.csv` in `data/`, then run
-`train_cgdh_model()` in `Predict_CGDH.py` and `train_vnd_model()` in
-`Predict_VND.py`, respectively. These functions reproduce the two
-meta-training workflows and save the resulting weights under the local
-`models/` directory. Both `data/` and `models/` are ignored by Git. Training is
-never started automatically when a model file is missing.
+Call `train_cgdh_model(data_path=...)` from `Predict_CGDH.py` to train the CGDH
+predictor, or `train_vnd_model(data_path=...)` from `Predict_VND.py` to train
+the VND predictor.
 
 ## Solver requirements
 
