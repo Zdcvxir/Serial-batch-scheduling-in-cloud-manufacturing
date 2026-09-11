@@ -69,6 +69,9 @@ def initialize_model(instance=None):
 
 def _initialize_columns():
     """Generate initial columns with the three construction strategies."""
+    global _initial_feasible_solution
+    _initial_feasible_solution = None
+    snapshot_start = len(Heuristic_solution_list)
     sorted_T = sorted(T_dict.items(), key= lambda item: item[1][1] + item[1][2] / item[1][0])
     sorted_J = sorted(J_dict.items(), key=lambda item: item[1][1])
     j = 0
@@ -76,7 +79,7 @@ def _initialize_columns():
     Match = {i[0]: [] for i in sorted_T}
     time_slots = list(Match.keys())
     Total_Target = 0
-    while j < N:
+    while j < N and k < len(time_slots):
 
         next_schedule = [t[0] for t in Match[time_slots[k]]] + [sorted_J[j][0]]
         _, test_time = _calculate_target(next_schedule, sorted_T[k][0])
@@ -87,7 +90,7 @@ def _initialize_columns():
         else:
             k += 1
 
-    Match = {key: value for key, value in Match.items() if value}
+    Match = {key: value for key, value in Match.items() if value} if j == N else {}
 
     for key, value_list in Match.items():
         Schedule = []
@@ -103,13 +106,20 @@ def _initialize_columns():
         _add_column(Schedule, Target, Vector, Timeslot)
         Total_Target += Target
 
-    print(f"Initial solution cost: {Total_Target}")
-
-    _snapshot_feasible_solution(Match)
+    if j == N:
+        print(f"Initial solution cost: {Total_Target}")
+        _snapshot_feasible_solution(Match)
+    else:
+        print("Deterministic construction failed; trying randomized initialization.")
 
     _add_heuristic_columns('rj')
     _add_heuristic_columns('rt')
     _add_heuristic_columns('rtj')
+    initial_candidates = Heuristic_solution_list[snapshot_start:]
+    if not initial_candidates:
+        raise RuntimeError("No feasible initial solution found within the construction budget.")
+    cost, schedule = min(initial_candidates, key=lambda entry: entry[0])
+    _initial_feasible_solution = (cost, {slot: jobs.copy() for slot, jobs in schedule.items()})
 
 def _snapshot_feasible_solution(match_dict):
     ts_tasks = {}
@@ -162,7 +172,7 @@ def _add_heuristic_columns(strategy):
         j = k = 0
         Match = {i[0]: [] for i in sorted_T}
         time_slots = list(Match.keys())
-        while j < N:
+        while j < N and k < len(time_slots):
             next_schedule = [t[0] for t in Match[time_slots[k]]] + [sorted_J[j][0]]
             _, test_time = _calculate_target(next_schedule, sorted_T[k][0])
             if test_time <= sorted_T[k][1][0]:
@@ -171,6 +181,8 @@ def _add_heuristic_columns(strategy):
             else:
                 k += 1
 
+        if j < N:
+            continue
         Match = {key: val for key, val in Match.items() if val}
         Total = 0
         for key, val in Match.items():
@@ -180,6 +192,8 @@ def _add_heuristic_columns(strategy):
             best_Total = Total
             best_Match = Match
 
+    if best_Total == float('inf'):
+        return
     for key, value_list in best_Match.items():
         Schedule = [tup[0] for tup in value_list]
         Vector = [0] * N
@@ -464,6 +478,24 @@ def print_solution(solution: dict):
 
     print(f"\nTotal production cost: {total_target:.1f}")
 
+def _recovery_failure():
+    """Retain a known feasible solution when all completion attempts fail."""
+    candidates = list(Heuristic_solution_list)
+    initial = globals().get('_initial_feasible_solution')
+    if initial is not None:
+        candidates.append(initial)
+    if not candidates:
+        raise RuntimeError("Recovery failed and no known feasible initial solution is available.")
+    cost, schedule = min(candidates, key=lambda entry: entry[0])
+    fallback = {slot: jobs.copy() for slot, jobs in schedule.items()}
+    if not Heuristic_solution_list or cost < min(entry[0] for entry in Heuristic_solution_list):
+        Heuristic_solution_list.append((cost, fallback))
+    _build_master_problem()
+    print("Recovery failed; retaining the best known feasible solution.")
+    return {slot: [(job, J_dict[job]) for job in jobs]
+            for slot, jobs in fallback.items()}, cost
+
+
 def Heuristic_solution(usage_list, strategy):
 
     used_jobs = set()
@@ -554,7 +586,7 @@ def Heuristic_solution(usage_list, strategy):
         Match = {i[0]: [] for i in sorted_T}
         time_slots = list(Match.keys())
 
-        while j < len(sorted_J):
+        while j < len(sorted_J) and k < len(time_slots):
 
             next_schedule = [t[0] for t in Match[time_slots[k]]] + [sorted_J[j][0]]
             _, test_time = _calculate_target(next_schedule, sorted_T[k][0])
@@ -565,6 +597,8 @@ def Heuristic_solution(usage_list, strategy):
             else:
                 k += 1
 
+        if j < len(sorted_J):
+            continue
         Match = {key: val for key, val in Match.items() if val}
         Total = 0
         for key, val in Match.items():
@@ -574,6 +608,8 @@ def Heuristic_solution(usage_list, strategy):
             best_Total = Total
             best_Match = Match
 
+    if best_Total == float('inf'):
+        return _recovery_failure()
     full_jobs = {ts: jobs.copy() for ts, jobs in selected_whole_cols}
     for ts, job_tuples in best_Match.items():
         full_jobs.setdefault(ts, []).extend(t[0] for t in job_tuples)

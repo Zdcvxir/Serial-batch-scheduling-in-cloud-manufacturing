@@ -56,13 +56,15 @@ def _initialize_columns():
 
     match_A = _build_match(sorted_T_orig, sorted_J_orig)
     cost_A = sum(_calculate_target(jobs, slot)[0]
-                 for slot, jobs in match_A.items())
+                 for slot, jobs in match_A.items()) if match_A is not None else float('inf')
 
     best_B_match, best_B_cost = None, float('inf')
     for _ in range(maml_settings.VND_INITIALIZATION_TRIALS):
         sorted_T_rand = sorted(T_dict.items(), key=lambda x: random.random())
         sorted_J_rand = sorted(J_dict.items(), key=lambda x: random.random())
         cand_match = _build_match(sorted_T_rand, sorted_J_rand)
+        if cand_match is None:
+            continue
         cand_cost = sum(_calculate_target(jobs, slot)[0]
                         for slot, jobs in cand_match.items())
         if cand_cost < best_B_cost:
@@ -71,6 +73,8 @@ def _initialize_columns():
 
     if best_B_cost < cost_A:
         return best_B_match
+    elif match_A is None:
+        raise RuntimeError("No feasible initial solution found within the construction budget.")
     else:
         return match_A
 
@@ -81,6 +85,8 @@ def _build_match(sorted_T, sorted_J):
     time_slots = list(match.keys())
 
     while j < N:
+        if k >= len(time_slots):
+            return None
         next_schedule = match[time_slots[k]] + [sorted_J[j][0]]
         _, test_time = _calculate_target(next_schedule, time_slots[k])
         if test_time <= sorted_T[k][1][0]:
@@ -337,13 +343,13 @@ def VND(Match, T_max):
 
     def try_move(nei_id):
         nonlocal ini_solution, ini_target, test, nei_ptr, target_list
-        target_list = [(ini_target, ini_solution, 0.0)]
+        target_list = [(ini_target, copy.deepcopy(ini_solution), 0.0)]
         backup = copy.deepcopy(ini_solution)
-        new_sol = NEIGHBORS[nei_id](ini_solution, start_time, T_max)
+        new_sol = NEIGHBORS[nei_id](copy.deepcopy(ini_solution), start_time, T_max)
         new_target = sum(_calculate_target(jobs, slot)[0]
                          for slot, jobs in new_sol.items())
         if new_target < ini_target:
-            target_list.append((new_target, new_sol, time.perf_counter() - start_time))
+            target_list.append((new_target, copy.deepcopy(new_sol), time.perf_counter() - start_time))
             ini_solution, ini_target = new_sol, new_target
             test = 0
             nei_ptr = 0
